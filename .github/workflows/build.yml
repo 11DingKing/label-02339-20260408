@@ -1,0 +1,102 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            qt-version: '6.5.0'
+            qt-arch: 'gcc_64'
+          - os: macos-latest
+            qt-version: '6.5.0'
+            qt-arch: 'clang_64'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: ${{ matrix.qt-version }}
+        arch: ${{ matrix.qt-arch }}
+        modules: 'qtserialport qtsql'
+        cache: true
+
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-shape0
+
+    - name: Configure CMake
+      run: |
+        cd backend
+        cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: |
+        cd backend
+        cmake --build build --config Release
+
+    - name: Run tests
+      id: run-tests
+      run: |
+        cd backend/build
+        ctest -C Release --output-on-failure --output-junit test-results.xml
+      continue-on-error: true
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.os }}
+        path: backend/build/test-results.xml
+        if-no-files-found: ignore
+
+    - name: Upload test logs on failure
+      if: steps.run-tests.outcome == 'failure'
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-logs-${{ matrix.os }}
+        path: |
+          backend/build/Testing/**/*
+          backend/build/*.log
+        if-no-files-found: ignore
+
+    - name: Package (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        cd backend/build
+        cpack -G DEB -C Release
+
+    - name: Package (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd backend/build
+        cpack -G DragNDrop -C Release
+
+    - name: Upload packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: packages-${{ matrix.os }}
+        path: |
+          backend/build/*.deb
+          backend/build/*.dmg
+        if-no-files-found: ignore
+
+    - name: Check test status
+      if: steps.run-tests.outcome == 'failure'
+      run: exit 1

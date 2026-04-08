@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=EnvMonitor
+GenericName=环境监测系统
+Comment=一个用于监测环境参数的 Qt 应用程序
+Icon=EnvMonitor
+Exec=EnvMonitor
+Terminal=false
+Categories=Utility;System;Monitor;
+Keywords=environment;monitor;sensor;
+StartupNotify=true
