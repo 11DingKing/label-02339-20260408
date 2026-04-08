@@ -1,0 +1,64 @@
+# ==================== Qt / C++ ====================
+# 编译输出
+build/
+build-test/
+cmake-build-*/
+*.o
+*.obj
+*.moc
+*.rcc
+*.qm
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.autosave
+Makefile
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+
+# Qt Creator 临时文件
+*.stash
+*.qmlc
+*.jsc
+
+# 二进制文件
+EnvMonitor
+*.exe
+*.app
+*.dylib
+*.so
+*.dll
+
+# ==================== IDE ====================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ==================== Docker ====================
+.docker/
+
+# ==================== 数据库 ====================
+*.db
+*.sqlite
+*.sqlite3
+
+# ==================== 配置（运行时生成） ====================
+config.ini
+
+# ==================== 日志 ====================
+*.log
+
+# ==================== 系统文件 ====================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
